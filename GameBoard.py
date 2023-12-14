@@ -22,9 +22,8 @@ class GameBoard:
 
     def set_up_board(self) -> None:
         self._board.clear()
-        for y in range(self._board_size):
-            for x in range(self._board_size):
-                self._board.append(0)
+        for _ in range(self._board_size**2):
+            self._board.append(0)
 
     @property
     def board(self) -> []:
@@ -49,6 +48,8 @@ class GameBoard:
         cell_index = index_x + index_y * self._board_size
 
         return True, cell_index
+        # change index returning - return index_x, index_y
+        # this way correctness of index can be check once - inside the update function
 
     def update(self, cell_index: int, symbol: str) -> bool:
         if cell_index < 0 or cell_index > self._board_size**2 - 1:

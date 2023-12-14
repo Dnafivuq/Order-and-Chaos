@@ -15,4 +15,4 @@ if __name__ == "__main__":
 
 # TO DO:
 # > array of moves - undo button
-# > bot moves delay
+# > bot moves delay (for imersion (ig))

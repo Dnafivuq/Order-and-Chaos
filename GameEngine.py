@@ -18,6 +18,8 @@ class GameEngine:
         self._current_player = "player"
         self._winner = "None"
 
+        self._maked_moves = []
+
         self._bot = Bot()
         self._bot.load_board(self._board.board)
 
@@ -50,14 +52,14 @@ class GameEngine:
 
     def _update(self) -> None:
         if self._current_player == "bot":
-            # bot timer
+            # bot timer - to do
             bot_move = self._bot.make_move()
             if self._board.update(bot_move[0], bot_move[1]):
                 if self._bot.check_winning():
                     print('bot won')
                 self._current_player = "player"
                 return
-            raise Exception
+            raise Exception  # only for debuging??
         if self._mouse.left_button_pressing:
             if self._circle_button.check_if_clicked(self._mouse.position):
                 self._selected_symbol = self._circle_button.on_click()
@@ -69,7 +71,7 @@ class GameEngine:
 
             if self._current_player == "player":
                 cell_index = self._board.calculate_cell_index(self._mouse.position)
-                if not cell_index[0]:
+                if not cell_index[0]:  # calculated index is not correct (mouse was outside the game board etc.)
                     return
                 if self._board.update(cell_index[1], self._selected_symbol):
                     if self._bot.check_winning():

@@ -80,6 +80,15 @@ class Bot:
         array = [i for i in range(11, 32, 5)]
         self._indexes_array.append(array)
 
+    def _amount_of_each_symbol_in_array(self, array) -> dict:
+        symbol_count = {'circle': 0, 'cross': 0}
+        for value in array:
+            if value == 1:
+                symbol_count['circle'] += 1
+            if value == 2:
+                symbol_count['cross'] += 1
+        return symbol_count
+
     def _check_array(self, array: []) -> (bool, bool):  # second bool is for checking if array is winable
         array_of_subarrays = []
         subarray = []
@@ -104,8 +113,13 @@ class Bot:
         if len(array) == 6:
             if array[0] == array[-1] and array[0] != 0:  # first and last square is the same
                 return (False, False)
+            symbol_count = self._amount_of_each_symbol_in_array(array[1:5])
+            if symbol_count['circle'] >= 1 and symbol_count['cross'] >= 1:
+                return (False, False)
         elif len(array) == 5:  # one of four small (only 5 squares) diagonal - special cases for winnablity
-            pass
+            symbol_count = self._amount_of_each_symbol_in_array(array)
+            if symbol_count['circle'] >= 1 and symbol_count['cross'] >= 1:
+                return (False, False)
 
         # deafult return value - array is not a winning one (no 5 of one type),
         # but still can be won (possibility for 5 of one type)
