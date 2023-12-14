@@ -41,4 +41,3 @@ class ChangeSymbolButton(Button):
     def on_click(self):
         self.update_colors((self._fill_color, "yellow"))
         return self._symbol
- 

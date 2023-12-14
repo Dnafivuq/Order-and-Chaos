@@ -19,7 +19,7 @@ class GameEngine:
         self._winner = "None"
 
         self._bot = Bot()
-        self._bot.load_board(self._board._board)
+        self._bot.load_board(self._board.board)
 
         self._cross_button = GUI.ChangeSymbolButton("cross")
         self._cross_button.update_position((740, 330))
@@ -50,18 +50,15 @@ class GameEngine:
 
     def _update(self) -> None:
         if self._current_player == "bot":
+            # bot timer
             bot_move = self._bot.make_move()
             if self._board.update(bot_move[0], bot_move[1]):
+                if self._bot.check_winning():
+                    print('bot won')
                 self._current_player = "player"
-                return    
+                return
             raise Exception
-        # elif self._current_player == "player":
         if self._mouse.left_button_pressing:
-            cell_index = self._board.calculate_cell_index(self._mouse.position)
-            if cell_index[0]:
-                if self._board.update(cell_index[1], self._selected_symbol):
-                    self._current_player = "player"  # "bot"
-
             if self._circle_button.check_if_clicked(self._mouse.position):
                 self._selected_symbol = self._circle_button.on_click()
                 self._cross_button.update_colors(("red", "black"))
@@ -69,6 +66,16 @@ class GameEngine:
             if self._cross_button.check_if_clicked(self._mouse.position):
                 self._selected_symbol = self._cross_button.on_click()
                 self._circle_button.update_colors(("green", "black"))
+
+            if self._current_player == "player":
+                cell_index = self._board.calculate_cell_index(self._mouse.position)
+                if not cell_index[0]:
+                    return
+                if self._board.update(cell_index[1], self._selected_symbol):
+                    if self._bot.check_winning():
+                        print('player won')
+                    self._current_player = "bot"
+                    return
 
     def _render(self) -> None:
         self._screen.fill("grey")
