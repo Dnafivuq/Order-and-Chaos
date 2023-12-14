@@ -49,12 +49,17 @@ class GameEngine:
                 self._running = False
             elif event.type == pygame.MOUSEBUTTONDOWN and event.dict['button'] == 1:
                 self._mouse._left_button = True
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.dict['button'] == 3:  # delete this after testing
+                self._mouse._right_button = True
 
     def _update(self) -> None:
+        if self._mouse._right_button:
+            print(self._maked_moves)
         if self._current_player == "bot":
             # bot timer - to do
             bot_move = self._bot.make_move()
             if self._board.update(bot_move[0], bot_move[1]):
+                self._maked_moves.append(bot_move)
                 if self._bot.check_winning():
                     print('bot won')
                 self._current_player = "player"
@@ -74,6 +79,7 @@ class GameEngine:
                 if not cell_index[0]:  # calculated index is not correct (mouse was outside the game board etc.)
                     return
                 if self._board.update(cell_index[1], self._selected_symbol):
+                    self._maked_moves.append((cell_index[1], f'p_{self._selected_symbol}'))
                     if self._bot.check_winning():
                         print('player won')
                     self._current_player = "bot"
