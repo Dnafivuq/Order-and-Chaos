@@ -17,21 +17,31 @@ class GameEngine:
         self._mouse = Mouse()
         self._current_player = "player"
         self._winner = "None"
+        self._bot_role = "chaos"
 
         self._maked_moves = []
 
         self._bot = Bot()
         self._bot.load_board(self._board.board)
+        self._bot_time_delay = 150  # 2.5s
+        self._bot_clock = self._bot_time_delay
 
         self._cross_button = GUI.ChangeSymbolButton("cross")
-        self._cross_button.update_position((740, 330))
+        self._cross_button.update_position((740, 316))
         self._cross_button.update_size((64, 64))
         self._cross_button.update_colors(("red", "black"))
 
         self._circle_button = GUI.ChangeSymbolButton("circle")
-        self._circle_button.update_position((740+96, 330))
+        self._circle_button.update_position((740+96, 316))
         self._circle_button.update_size((64, 64))
         self._circle_button.update_colors(("green", "yellow"))
+
+        self._order_button = GUI.Button((64, 64), (740, 120))
+        self._chaos_button = GUI.Button((64, 64), (740+96, 120))
+
+        self._undo_button = GUI.Button((64+36+64, 50), (740, 430))
+        self._restart_button = GUI.Button((64+36+64, 50), (740, 430+80))
+        self._menu_button = GUI.Button((64+36+64, 50), (740, 430+160))
 
     def run(self) -> None:
         self._deltaTime = self._clock.tick(60) / 1000
@@ -53,28 +63,38 @@ class GameEngine:
                 self._mouse._right_button = True
 
     def _update(self) -> None:
+        if self._current_player == "player" and self._bot_role == "chaos":
+            self._order_button.update_colors(("", "yellow"))
+            self._chaos_button.update_colors(("", "white"))
+        else:
+            self._order_button.update_colors(("", "white"))
+            self._chaos_button.update_colors(("", "yellow"))
+
         if self._mouse._right_button:
             print(self._maked_moves)
+
         if self._current_player == "bot":
-            # bot timer - to do
-            bot_move = self._bot.make_move("chaos")
-            print(f'\t\t: {bot_move}')
-            if self._board.update(bot_move[0], bot_move[1]):
-                self._maked_moves.append(bot_move)
-                winner = self._bot.check_winning()
-                if winner:
-                    print(f'{winner} won! gg!')
-                self._current_player = "player"
-                return
-            raise Exception  # only for debuging??
+            self._bot_clock -= 1
+            if self._bot_clock == 0:  # bot timer - to do
+                bot_move = self._bot.make_move(self._bot_role)
+                print(f'\t\t: {bot_move}')
+                if self._board.update(bot_move[0], bot_move[1]):
+                    self._maked_moves.append(bot_move)
+                    winner = self._bot.check_winning()
+                    if winner:
+                        print(f'{winner} won! gg!')
+                    self._current_player = "player"
+                    self._bot_clock = self._bot_time_delay
+                    return
+                raise Exception  # only for debuging??
         if self._mouse.left_button_pressing:
             if self._circle_button.check_if_clicked(self._mouse.position):
                 self._selected_symbol = self._circle_button.on_click()
-                self._cross_button.update_colors(("red", "black"))
+                self._cross_button.update_colors(("", "black"))
 
             if self._cross_button.check_if_clicked(self._mouse.position):
                 self._selected_symbol = self._cross_button.on_click()
-                self._circle_button.update_colors(("green", "black"))
+                self._circle_button.update_colors(("", "black"))
 
             if self._current_player == "player":
                 cell_index = self._board.calculate_cell_index(self._mouse.position)
@@ -95,6 +115,10 @@ class GameEngine:
         self._board.render_board(self._screen)
         self._cross_button.render(self._screen)
         self._circle_button.render(self._screen)
-
+        self._order_button.render(self._screen)
+        self._chaos_button.render(self._screen)
+        self._undo_button.render(self._screen)
+        self._restart_button.render(self._screen)
+        self._menu_button.render(self._screen)
         # pygame.draw.rect(self._screen, "red", cell_Rect)
         pygame.display.flip()
