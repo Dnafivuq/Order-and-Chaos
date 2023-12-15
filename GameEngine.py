@@ -58,6 +58,7 @@ class GameEngine:
         if self._current_player == "bot":
             # bot timer - to do
             bot_move = self._bot.make_move("chaos")
+            print(f'\t\t: {bot_move}')
             if self._board.update(bot_move[0], bot_move[1]):
                 self._maked_moves.append(bot_move)
                 winner = self._bot.check_winning()
