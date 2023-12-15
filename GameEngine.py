@@ -57,11 +57,12 @@ class GameEngine:
             print(self._maked_moves)
         if self._current_player == "bot":
             # bot timer - to do
-            bot_move = self._bot.make_move()
+            bot_move = self._bot.make_move("chaos")
             if self._board.update(bot_move[0], bot_move[1]):
                 self._maked_moves.append(bot_move)
-                if self._bot.check_winning():
-                    print('bot won')
+                winner = self._bot.check_winning()
+                if winner:
+                    print(f'{winner} won! gg!')
                 self._current_player = "player"
                 return
             raise Exception  # only for debuging??
@@ -80,8 +81,9 @@ class GameEngine:
                     return
                 if self._board.update(cell_index[1], self._selected_symbol):
                     self._maked_moves.append((cell_index[1], f'p_{self._selected_symbol}'))
-                    if self._bot.check_winning():
-                        print('player won')
+                    winner = self._bot.check_winning()
+                    if winner:
+                        print(f'{winner} won! gg!')
                     self._current_player = "bot"
                     return
 

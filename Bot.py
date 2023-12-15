@@ -6,51 +6,80 @@ class Bot:
         self._board = []
         self._board_size = 6
         self._dificulty = "easy"
-        self._indexes_array = []
+        self._indexes_arrays = []
 
     def load_board(self, board: list) -> None:
         self._board = board
+        self._indexes_arrays = []
         self._load_indexes_to_check()
 
     def set_difficulty(self, difficulty: str) -> None:
         self._dificulty = difficulty
 
-    def make_move(self) -> (int, str):
+    def make_move(self, role: str) -> (int, str):
         if self._dificulty == "easy":
-            cell_index = self._pick_random_cell()
-            if random.randint(0, 1) == 0:
-                return cell_index, "cross"
-            return cell_index, "circle"
+            return self._pick_random_cell()
         elif self._dificulty == "difficult":
-            pass
+            if role == "chaos":
+                return self._pick_optimal_cell()
+
+    def _pick_optimal_cell(self) -> (int, str):
+        def create_array_info(max, symbol, array):
+            return {'symbol': symbol, 'symbol_count': max, 'indexes_array': array}
+
+        array_options = []
+        for indexes_array in self._indexes_arrays:  # finding the closest to win array(s)
+            array = self._get_board_values_array(indexes_array)  # player move -> check winning to delete unwinnable arrays -> make bot do the move
+            symbol_count = self._amount_of_each_symbol_in_array(array)
+
+            if symbol_count['cross'] >= symbol_count['circle']:
+                array_info = create_array_info(symbol_count['cross'], 'cross', indexes_array)
+            else:
+                array_info = create_array_info(symbol_count['circle'], 'circle', indexes_array)
+            if array_options:
+                current_max_symbol_count = array_options[0]['symbol_count']
+                if array_info['symbol_count'] > current_max_symbol_count:
+                    array_options.clear()
+                if array_info['symbol_count'] >= current_max_symbol_count:
+                    array_options.append(array_info)
+            else:
+                array_options.append(array_info)
+        if len(array_options) == 0:
+            raise Exception('No arrays to choose from')
+        else:
+            for array_info in array_options:
+                print(array_info)
 
     def _pick_random_cell(self) -> int:
         available_cells = [index for index, cell in enumerate(self._board) if cell == 0]
         print(f'move options: {available_cells}')
         if len(available_cells) == 0:
             raise ValueError('no available cells')
-        return available_cells[random.randrange(0, len(available_cells))]
+        symbol = 'cross'
+        if random.randint(0, 1) == 0:
+            symbol = 'circle'
+        return (available_cells[random.randrange(0, len(available_cells))], symbol)
 
     def _get_board_values_array(self, indexes_array):
         board_values_array = [self._board[i] for i in indexes_array]
         return board_values_array
 
-    def check_winning(self):
-        temporary_indexes_array = []
-        for indexes_array in self._indexes_array:
+    def check_winning(self) -> str:
+        temporary_indexes_arrays = []
+        for indexes_array in self._indexes_arrays:
             array = self._get_board_values_array(indexes_array)
             print(array)
             result = self._check_array(array)
             if result[1] is True:
-                temporary_indexes_array.append(indexes_array)
+                temporary_indexes_arrays.append(indexes_array)
                 print('added')
             if result[0] is True:
                 print('win')
-                return True
-        if len(temporary_indexes_array) == 0:
-            return True
-        self._indexes_array = temporary_indexes_array
-        return False
+                return "order"
+        self._indexes_arrays = temporary_indexes_arrays
+        if len(self._indexes_arrays) == 0:
+            return "chaos"
+        return ""
 
     def _load_indexes_to_check(self) -> None:
         # checking columns:
@@ -58,27 +87,27 @@ class Bot:
             array = []
             for x in range(self._board_size):
                 array.append(y * self._board_size + x)
-            self._indexes_array.append(array)
+            self._indexes_arrays.append(array)
         # checking rows:
         for x in range(self._board_size):
             array = []
             for y in range(self._board_size):
                 array.append(y * self._board_size + x)
-            self._indexes_array.append(array)
+            self._indexes_arrays.append(array)
 
         # checking diagonals:
         array = [i for i in range(0, 36, 7)]
-        self._indexes_array.append(array)
+        self._indexes_arrays.append(array)
         array = [i for i in range(1, 30, 7)]
-        self._indexes_array.append(array)
+        self._indexes_arrays.append(array)
         array = [i for i in range(6, 35, 7)]
-        self._indexes_array.append(array)
+        self._indexes_arrays.append(array)
         array = [i for i in range(4, 25, 5)]
-        self._indexes_array.append(array)
+        self._indexes_arrays.append(array)
         array = [i for i in range(5, 31, 5)]
-        self._indexes_array.append(array)
+        self._indexes_arrays.append(array)
         array = [i for i in range(11, 32, 5)]
-        self._indexes_array.append(array)
+        self._indexes_arrays.append(array)
 
     def _amount_of_each_symbol_in_array(self, array) -> dict:
         symbol_count = {'circle': 0, 'cross': 0}
