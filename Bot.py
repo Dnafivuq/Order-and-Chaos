@@ -18,7 +18,7 @@ class Bot:
 
     def load_board(self, board: list) -> None:
         self._board = board
-        self._indexes_arrays = []
+        self._indexes_arrays.clear()
         self._load_indexes_to_check()
 
     def set_difficulty(self, difficulty: str) -> None:
@@ -32,7 +32,7 @@ class Bot:
                 return self._pick_optimal_cell_chaos()
             elif role == "order":
                 return self._pick_opitmal_cell_order()
-        return Exception("No move made error")
+        return Exception("No move made")
 
     def _pick_optimal_cell_chaos(self) -> (int, str):
         def _create_array_info(max: str, symbol: int, array: list) -> dict:

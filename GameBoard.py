@@ -14,10 +14,8 @@ class GameBoard:
         self._board_size = 6
         self._board = []
         self._cell_size = 96
-        self._end_of_game = False
         self._board_render_margin = (42, 42)
         self._cell_spacing = 12
-        self._winner = "None"
         self._bot = Bot()
 
     def set_up_board(self) -> None:

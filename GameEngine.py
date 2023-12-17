@@ -12,19 +12,13 @@ class GameEngine:
         self._running = True
         self._clock = pygame.time.Clock()
         self._board = GameBoard()
-        self._board.set_up_board()
-        self._selected_symbol = "circle"
         self._mouse = Mouse()
-        self._winner = ""
-        self._bot_role = "chaos"
-        self._current_role = "order"
 
-        self._maked_moves = []
+        self._maked_moves = list()
 
         self._bot = Bot()
-        self._bot.load_board(self._board.board)
-        self._bot_time_delay = 150  # 2.5s
-        self._bot_clock = self._bot_time_delay
+        self._bot_difficulty = "difficult"
+        self._bot_role = "chaos"
 
         self._cross_button = GUI.ChangeSymbolButton("cross")
         self._cross_button.update_position((740, 316))
@@ -34,7 +28,7 @@ class GameEngine:
         self._circle_button = GUI.ChangeSymbolButton("circle")
         self._circle_button.update_position((740+96, 316))
         self._circle_button.update_size((64, 64))
-        self._circle_button.update_colors(("green", "yellow"))
+        self._circle_button.update_colors(("green", "black"))
 
         self._order_button = GUI.Button((64, 64), (740, 120))
         self._chaos_button = GUI.Button((64, 64), (740+96, 120))
@@ -43,8 +37,27 @@ class GameEngine:
         self._restart_button = GUI.Button((64+36+64, 50), (740, 430+80))
         self._menu_button = GUI.Button((64+36+64, 50), (740, 430+160))
 
+    def _start_game(self):
+        self._current_role = "order"
+        self._selected_symbol = self._circle_button.on_click()
+        self._cross_button.update_colors(("", "black"))
+        self._winner = ""
+
+        self._maked_moves.clear()
+        self._mouse.reset_mouse_pressing()
+
+        self._board.set_up_board()
+
+        self._bot.load_board(self._board.board)
+        self._bot.set_difficulty(self._bot_difficulty)
+        self._bot_time_delay = 120  # 2s
+        self._bot_clock = self._bot_time_delay
+    
+        print('<###> Starting Game...\n')
+
     def run(self) -> None:
         self._deltaTime = self._clock.tick(60) / 1000
+        self._start_game()
         while (self._running):
             self._process_events()
             self._update()
@@ -92,6 +105,7 @@ class GameEngine:
                     self._bot_clock = self._bot_time_delay
                     return
                 raise Exception('bot could not make a move')  # only for debuging??
+
         if self._mouse.left_button_pressing:
             if self._circle_button.check_if_clicked(self._mouse.position):
                 self._selected_symbol = self._circle_button.on_click()
@@ -100,6 +114,9 @@ class GameEngine:
             if self._cross_button.check_if_clicked(self._mouse.position):
                 self._selected_symbol = self._cross_button.on_click()
                 self._circle_button.update_colors(("", "black"))
+
+            if self._restart_button.check_if_clicked(self._mouse.position):
+                self._start_game()
 
             if self._current_role != self._bot_role:
                 cell_index = self._board.calculate_cell_index(self._mouse.position)
