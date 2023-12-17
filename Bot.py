@@ -79,8 +79,16 @@ class Bot:
                 picked_symbol = symbol_dict[array_info['symbol']]
                 if board_values_array[0] == 0:  # special case, when array winnability depends on first and last square
                     index = 0
-                else:
+                elif board_values_array[-1] == 0:
                     index = -1
+                else:
+                    # special case: only first and last squares arent 0 and they are not the same (1, 2)
+                    # so making any move between <1, 4> index doesn't make an array unwinnable
+                    # thus resulting in executing this lines of code
+                    # bot can make a random move in this array -> player will make his move
+                    # -> bot makes the array unwinnable
+                    index = random.randrange(1, 4)
+                    return (indexes_array[index], symbol_dict[picked_symbol])
                 board_values_array[index] = picked_symbol  # convert symbol str to int
                 if self._check_array_win(board_values_array):
                     picked_symbol = symbol_dict[_return_oposite_symbol(array_info['symbol'])]

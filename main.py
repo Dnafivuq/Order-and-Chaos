@@ -8,6 +8,7 @@ pygame.init()
 def main():
     game_engine = GameEngine()
     game_engine.run()
+    pygame.quit()
 
 
 if __name__ == "__main__":

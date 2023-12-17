@@ -13,11 +13,11 @@ class GameEngine:
         self._clock = pygame.time.Clock()
         self._board = GameBoard()
         self._board.set_up_board()
-        self._selected_symbol = 'circle'
+        self._selected_symbol = "circle"
         self._mouse = Mouse()
-        self._current_player = "player"
-        self._winner = "None"
+        self._winner = ""
         self._bot_role = "chaos"
+        self._current_role = "order"
 
         self._maked_moves = []
 
@@ -49,7 +49,7 @@ class GameEngine:
             self._process_events()
             self._update()
             self._render()
-        pygame.quit()
+        # pygame.quit()
 
     def _process_events(self) -> None:
         self._mouse.reset_mouse_pressing()
@@ -63,7 +63,12 @@ class GameEngine:
                 self._mouse._right_button = True
 
     def _update(self) -> None:
-        if self._current_player == "player" and self._bot_role == "chaos":
+        def _return_oposite_role(role: str) -> str:
+            if role == "chaos":
+                return "order"
+            return "chaos"
+
+        if self._current_role == "order":
             self._order_button.update_colors(("", "yellow"))
             self._chaos_button.update_colors(("", "white"))
         else:
@@ -73,20 +78,20 @@ class GameEngine:
         if self._mouse._right_button:
             print(self._maked_moves)
 
-        if self._current_player == "bot":
+        if self._current_role == self._bot_role:
             self._bot_clock -= 1
             if self._bot_clock == 0:  # bot timer - to do
                 bot_move = self._bot.make_move(self._bot_role)
-                print(f'\t\t: {bot_move}')
+                print(f'\t<=: {bot_move}')
                 if self._board.update(bot_move[0], bot_move[1]):
                     self._maked_moves.append(bot_move)
                     winner = self._bot.check_winning()
                     if winner:
                         print(f'{winner} won! gg!')
-                    self._current_player = "player"
+                    self._current_role = _return_oposite_role(self._current_role)
                     self._bot_clock = self._bot_time_delay
                     return
-                raise Exception  # only for debuging??
+                raise Exception('bot could not make a move')  # only for debuging??
         if self._mouse.left_button_pressing:
             if self._circle_button.check_if_clicked(self._mouse.position):
                 self._selected_symbol = self._circle_button.on_click()
@@ -96,7 +101,7 @@ class GameEngine:
                 self._selected_symbol = self._cross_button.on_click()
                 self._circle_button.update_colors(("", "black"))
 
-            if self._current_player == "player":
+            if self._current_role != self._bot_role:
                 cell_index = self._board.calculate_cell_index(self._mouse.position)
                 if not cell_index[0]:  # calculated index is not correct (mouse was outside the game board etc.)
                     return
@@ -105,7 +110,7 @@ class GameEngine:
                     winner = self._bot.check_winning()
                     if winner:
                         print(f'{winner} won! gg!')
-                    self._current_player = "bot"
+                    self._current_role = _return_oposite_role(self._current_role)
                     return
 
     def _render(self) -> None:
