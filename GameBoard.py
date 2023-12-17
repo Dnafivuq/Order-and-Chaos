@@ -5,7 +5,6 @@ from Bot import Bot
 
 
 class GameBoard:
-    # class SquareFlag(Enum):
     #     EMPTY = 0
     #     CIRCLE = 1
     #     CROSS = 2
@@ -71,7 +70,7 @@ class GameBoard:
             elif cell == 2:
                 color = "red"
             else:
-                color = "white"
+                color = pygame.Color(204, 255, 255)
 
             pygame.draw.rect(screen, color, cell_Rect, 0, 10)
-            pygame.draw.rect(screen, 'black', cell_Rect, 3, 10)
+            pygame.draw.rect(screen, pygame.Color(26, 26, 26), cell_Rect, 3, 10)

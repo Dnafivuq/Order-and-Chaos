@@ -17,8 +17,8 @@ class GameEngine:
         self._maked_moves = list()
 
         self._bot = Bot()
-        self._bot_difficulty = "difficult"
-        self._bot_role = "chaos"
+        self._bot_difficulty = "easy"
+        self._bot_role = "order"
 
         self._cross_button = GUI.ChangeSymbolButton("cross")
         self._cross_button.update_position((740, 316))
@@ -52,7 +52,7 @@ class GameEngine:
         self._bot.set_difficulty(self._bot_difficulty)
         self._bot_time_delay = 120  # 2s
         self._bot_clock = self._bot_time_delay
-    
+
         print('<###> Starting Game...\n')
 
     def run(self) -> None:
@@ -131,7 +131,7 @@ class GameEngine:
                     return
 
     def _render(self) -> None:
-        self._screen.fill("grey")
+        self._screen.fill(pygame.Color(0, 255, 153))
         # pygame.draw.circle(self._screen, "red", pygame.Vector2(600, 400), 40)
         # cell_Rect = pygame.Rect(0, 0, 64, 64)
         self._board.render_board(self._screen)
