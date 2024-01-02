@@ -15,20 +15,43 @@ class Bot:
         self._board_size = 6
         self._dificulty = "difficult"
         self._indexes_arrays = []
+        self._first_move = True
 
     def load_board(self, board: list) -> None:
         self._board = board
-        self._indexes_arrays.clear()
         self._load_indexes_to_check()
+        self._first_move = True
 
     def set_difficulty(self, difficulty: str) -> None:
         self._dificulty = difficulty
+
+    def check_winning(self) -> str:
+        if self._update_arrays():
+            return "order"
+        if len(self._indexes_arrays) == 0:
+            return "chaos"
+        return ""  # no winner yet
+
+    def make_move(self, role: str) -> (int, str):
+        if self._dificulty == "easy":
+            return self._pick_random_cell()
+        elif self._dificulty == "difficult":
+            if role == "chaos":
+                return self._pick_optimal_cell_chaos()
+            elif role == "order":
+                return self._pick_opitmal_cell_order()
+        return Exception("No move made")
+
+    def undo_moves(self):
+        self._load_indexes_to_check()
+        self._update_arrays()
 
     def _get_board_values_array(self, indexes_array: list) -> list:
         board_values_array = [self._board[i] for i in indexes_array]
         return board_values_array
 
     def _load_indexes_to_check(self) -> None:
+        self._indexes_arrays.clear()
         # checking columns:
         for y in range(self._board_size):
             array = []
@@ -57,19 +80,19 @@ class Bot:
         self._indexes_arrays.append(array)
 
     def _find_arrays_closest_to_win(self) -> list:
-        def create_array_info(max: str, symbol: int, array: list) -> dict:
-            return {'symbol': symbol, 'symbol_count': max, 'indexes_array': array}
+        def create_array_info(symbol: str, symbol_count: int, indexes_array: list) -> dict:
+            return {'symbol': symbol, 'symbol_count': symbol_count, 'indexes_array': indexes_array}
 
         arrays_closest_to_win = []
 
-        for indexes_array in self._indexes_arrays:  # finding array(s) closest to win 
+        for indexes_array in self._indexes_arrays:  # finding array(s) closest to win
             board_values_array = self._get_board_values_array(indexes_array)
             symbol_count = self._amount_of_each_symbol_in_array(board_values_array)
 
             if symbol_count['cross'] >= symbol_count['circle']:
-                array_info = create_array_info(symbol_count['cross'], 'cross', indexes_array)
+                array_info = create_array_info('cross', symbol_count['cross'], indexes_array)
             else:
-                array_info = create_array_info(symbol_count['circle'], 'circle', indexes_array)
+                array_info = create_array_info('circle', symbol_count['circle'], indexes_array)
 
             if arrays_closest_to_win:
                 current_max_symbol_count = arrays_closest_to_win[0]['symbol_count']
@@ -93,18 +116,18 @@ class Bot:
             raise Exception('No arrays to choose from')
         # else:
         for array_info in arrays_closest_to_win:
-            print(array_info['symbol'])
-            picked_symbol = symbol_dict[_return_oposite_symbol(array_info['symbol'])]
+            str_picked_symbol = _return_oposite_symbol(array_info['symbol'])
+            int_picked_symbol = symbol_dict[str_picked_symbol]
             indexes_array = array_info['indexes_array']
             board_values_array = self._get_board_values_array(indexes_array)
-            for index, cell_value in enumerate(board_values_array):
-                # print(f'\n\t {self._board[indexes_array[index]]}')  # debugin
-                if cell_value == 0:
-                    board_values_array[index] = picked_symbol
-                    if not self._check_array_winnability(board_values_array):
-                        return (indexes_array[index], symbol_dict[picked_symbol])
-                    board_values_array[index] = 0  # set cell value back to 0
-            picked_symbol = symbol_dict[array_info['symbol']]
+            available_indexes = [index for index, cell_value in enumerate(board_values_array) if cell_value == 0]
+            for index in available_indexes:
+                board_values_array[index] = int_picked_symbol
+                if not self._check_array_winnability(board_values_array):
+                    return (indexes_array[index], str_picked_symbol)
+                board_values_array[index] = 0  # set cell value back to 0
+            str_picked_symbol = array_info['symbol']
+            int_picked_symbol = symbol_dict[str_picked_symbol]
             if board_values_array[0] == 0:  # special case, when array winnability depends on first and last square
                 index = 0
             elif board_values_array[-1] == 0:
@@ -116,61 +139,44 @@ class Bot:
                 # bot can make a random move in this array -> player will make his move
                 # -> bot makes the array unwinnable
                 index = random.randrange(1, 4)
-                return (indexes_array[index], symbol_dict[picked_symbol])
-            board_values_array[index] = picked_symbol  # convert symbol str to int
+                return (indexes_array[index], str_picked_symbol)
+            board_values_array[index] = int_picked_symbol
             if self._check_array_win(board_values_array):
-                picked_symbol = symbol_dict[_return_oposite_symbol(array_info['symbol'])]
-            return (indexes_array[index], symbol_dict[picked_symbol])  # convert symbol int to str
+                str_picked_symbol = _return_oposite_symbol(str_picked_symbol)
+            return (indexes_array[index], str_picked_symbol)
 
     def _pick_opitmal_cell_order(self) -> (int, str):
-        # starting move is always (14, circle) or make it random?
-        if 0 == 1:  # first move
-            return (14, "circle")
+        # starting move is random for more game diversity
+        if self._first_move:
+            self._first_move = False
+            return self._pick_random_cell()
         arrays_closest_to_win = self._find_arrays_closest_to_win()
-        pass
+        # always try to fill 'mid' squares first, then the 'outsiders'
+        for array_info in arrays_closest_to_win:
+            indexes_array = array_info['indexes_array']
+            picked_symbol = array_info['symbol']
+            board_values_array = self._get_board_values_array(indexes_array)
+            available_indexes = [index for index, cell in enumerate(board_values_array) if cell == 0]
+            print(f'possible indexes: {available_indexes}, in {indexes_array} as {board_values_array}')
+            available_middle_indexes = []
+            for index in available_indexes:
+                if index >= 1 and index <= 4:
+                    available_middle_indexes.append(index)
+            if available_middle_indexes:
+                index = available_middle_indexes[random.randrange(0, len(available_middle_indexes))]
+                return (indexes_array[index], picked_symbol)
+
+            index = available_indexes[random.randint(-1, 0)]
+            return (indexes_array[index], picked_symbol)
 
     def _pick_random_cell(self) -> int:
         available_cells = [index for index, cell in enumerate(self._board) if cell == 0]
-        print(f'move options: {available_cells}')
         if len(available_cells) == 0:
             raise ValueError('no available cells')
         symbol = 'cross'
         if random.randint(0, 1) == 0:
             symbol = 'circle'
         return (available_cells[random.randrange(0, len(available_cells))], symbol)
-
-    def check_winning(self) -> str:  # keep it as check winning, but split some of it to 'update arrays', that only returns true if one of them is won, so array winnability can be better used in undoing moves.
-        # if update_arrays():   return 'order'
-        # if len(self._indexes_arrays):  return 'chaos'
-        # return ''
-        # check_array can be renamed to update arrays or something like that
-        temporary_indexes_arrays = []
-        print('\t<====>')
-        for indexes_array in self._indexes_arrays:
-            array = self._get_board_values_array(indexes_array)
-            print(array)
-            result = self._check_array(array)
-            if result[0] is True:
-                return "order"
-            if result[1] is True:
-                temporary_indexes_arrays.append(indexes_array)
-                print('added')
-            else:  # else added only for debuging purposes
-                print('deleted')
-        self._indexes_arrays = temporary_indexes_arrays
-        if len(self._indexes_arrays) == 0:
-            return "chaos"
-        return ""
-
-    def make_move(self, role: str) -> (int, str):
-        if self._dificulty == "easy":
-            return self._pick_random_cell()
-        elif self._dificulty == "difficult":
-            if role == "chaos":
-                return self._pick_optimal_cell_chaos()
-            elif role == "order":
-                return self._pick_opitmal_cell_order()
-        return Exception("No move made")
 
     def _amount_of_each_symbol_in_array(self, array) -> dict:
         symbol_count = {'circle': 0, 'cross': 0}
@@ -220,8 +226,19 @@ class Bot:
                 return False
         return True
 
-    def _check_array(self, array: list) -> (bool, bool):  # second bool is for checking if array is winable
-        if self._check_array_win(array):
-            return (True, True)  # second True in this case is just a gap filler.
-        winnability = self._check_array_winnability(array)
-        return (False, winnability)
+    def _update_arrays(self) -> bool:
+        temporary_indexes_arrays = []
+        print('#\t<===new update===>')
+        for indexes_array in self._indexes_arrays:
+            board_values_array = self._get_board_values_array(indexes_array)
+            print(board_values_array)
+            if self._check_array_win(board_values_array):
+                # if array is a winning one, no need for further check - end of the game
+                return True
+            if self._check_array_winnability(board_values_array):
+                temporary_indexes_arrays.append(indexes_array)
+                print('added')
+            else:  # else added only for debuging purposes
+                print('deleted')
+        self._indexes_arrays = temporary_indexes_arrays
+        return False

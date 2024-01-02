@@ -1,5 +1,3 @@
-# from pygame import Vector2
-# from enum import Enum
 import pygame
 from Bot import Bot
 
@@ -16,6 +14,14 @@ class GameBoard:
         self._board_render_margin = (42, 42)
         self._cell_spacing = 12
         self._bot = Bot()
+        self._cross_img = ""
+        self._circle_img = ""
+
+    def load_symbols_texture(self, cross_path: str, circle_path: str) -> None:
+        self._cross_img = pygame.image.load(cross_path)
+        self._circle_img = pygame.image.load(circle_path)
+        self._cross_img = pygame.transform.scale_by(self._cross_img, 1.5)
+        self._circle_img = pygame.transform.scale_by(self._circle_img, 1.5)
 
     def set_up_board(self) -> None:
         self._board.clear()
@@ -49,9 +55,9 @@ class GameBoard:
         # this way correctness of index can be check once - inside the update function
 
     def update(self, cell_index: int, symbol: str) -> bool:
-        if cell_index < 0 or cell_index > self._board_size**2 - 1:
+        if cell_index < 0 or cell_index > self._board_size**2 - 1:  # index out of range
             return False
-        if self._board[cell_index] != 0:
+        if self._board[cell_index] != 0:  # cell is already cross or circle
             return False
 
         if symbol == "cross":
@@ -60,17 +66,20 @@ class GameBoard:
             self._board[cell_index] = 1
         return True
 
+    def undo_moves(self, moves: list):
+        for move_index in moves:
+            self._board[move_index] = 0
+        
     def render_board(self, screen) -> None:
         for index, cell in enumerate(self._board):
             start_X = (index % self._board_size) * (self._cell_size + 12) + self._board_render_margin[0]
             start_Y = (index // self._board_size) * (self._cell_size + 12) + self._board_render_margin[0]
             cell_Rect = pygame.Rect(start_X, start_Y, self._cell_size, self._cell_size)
-            if cell == 1:
-                color = "green"
-            elif cell == 2:
-                color = "red"
-            else:
-                color = pygame.Color(204, 255, 255)
 
-            pygame.draw.rect(screen, color, cell_Rect, 0, 10)
+            background_color = pygame.Color(204, 255, 255)
+            pygame.draw.rect(screen, background_color, cell_Rect, 0, 10)
             pygame.draw.rect(screen, pygame.Color(26, 26, 26), cell_Rect, 3, 10)
+            if cell == 1:
+                screen.blit(self._circle_img, (start_X, start_Y))
+            elif cell == 2:
+                screen.blit(self._cross_img, (start_X, start_Y))
