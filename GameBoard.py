@@ -69,7 +69,7 @@ class GameBoard:
     def undo_moves(self, moves: list):
         for move_index in moves:
             self._board[move_index] = 0
-        
+
     def render_board(self, screen) -> None:
         for index, cell in enumerate(self._board):
             start_X = (index % self._board_size) * (self._cell_size + 12) + self._board_render_margin[0]

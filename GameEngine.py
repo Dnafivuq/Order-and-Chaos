@@ -74,7 +74,7 @@ class GameEngine:
 
     def run(self) -> None:
         self._delta_time = self._clock.tick(60) / 1000
-        self._start_game()
+        # self._start_game()
         while (self._running):
             self._process_events()
             if self._game_state == "menu":
