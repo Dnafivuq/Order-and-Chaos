@@ -514,7 +514,7 @@ class Bot:
 
     def _update_arrays(self) -> bool:
         """
-        Updates indexes_arrays based on their winnability. 
+        Updates indexes_arrays based on their winnability.
         Returns True if one of arrays is a winning one.
 
         Returns
