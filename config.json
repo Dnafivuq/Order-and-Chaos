@@ -1,0 +1,12 @@
+
+{
+    "chaos_img" : "./assets/chaos.png",
+    "order_img" : "./assets/order.png",
+    "circle_img" : "./assets/circle_new.png",
+    "cross_img" : "./assets/cross_new.png",
+    "menu_img" : "./assets/menu_button.png",
+    "restart_img" : "./assets/restart_button.png",
+    "start_img" : "./assets/start_button.png",
+    "undo_img" : "./assets/undo_button.png",
+    "font_path" : "./assets/RubikDoodleShadow-Regular.ttf"
+}

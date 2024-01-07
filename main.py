@@ -1,11 +1,9 @@
-# Example file showing a circle moving on screen
 import pygame
 from GameEngine import GameEngine
 
-pygame.init()
-
 
 def main():
+    pygame.init()
     game_engine = GameEngine()
     game_engine.run()
     pygame.quit()
