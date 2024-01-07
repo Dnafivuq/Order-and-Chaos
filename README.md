@@ -7,10 +7,14 @@ A python implementation of `Order and Chaos` tic tac toe variation game with GUI
 Supports playing as both roles:
 - Order
 - Chaos
+
 On two different difficulty levels:
+
 - Easy
 - Hard
+
 With baisic functionalites as:
+
 - Undoing your last move
 - Restarting game with current role and difficulty settings
 
